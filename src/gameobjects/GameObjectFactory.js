@@ -1,127 +1,160 @@
-Phaser.GameObjectFactory = function (game) {
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2018 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
 
-	this.game = game;
-	this.world = this.game.world;
+var Class = require('../utils/Class');
+var PluginManager = require('../boot/PluginManager');
 
-};
+/**
+ * @classdesc
+ * The Game Object Factory is a Scene plugin that allows you to quickly create many common
+ * types of Game Objects and have them automatically registered with the Scene.
+ *
+ * Game Objects directly register themselves with the Factory and inject their own creation
+ * methods into the class.
+ *
+ * @class GameObjectFactory
+ * @memberOf Phaser.GameObjects
+ * @constructor
+ * @since 3.0.0
+ *
+ * @param {Phaser.Scene} scene - The Scene to which this Game Object Factory belongs.
+ */
+var GameObjectFactory = new Class({
 
-Phaser.GameObjectFactory.prototype = {
+    initialize:
 
-	game: null,
-    world: null,
+    function GameObjectFactory (scene)
+    {
+        /**
+         * The Scene to which this Game Object Factory belongs.
+         *
+         * @name Phaser.GameObjects.GameObjectFactory#scene
+         * @type {Phaser.Scene}
+         * @protected
+         * @since 3.0.0
+         */
+        this.scene = scene;
 
-    existing: function (object) {
+        /**
+         * A reference to the Scene.Systems.
+         *
+         * @name Phaser.GameObjects.GameObjectFactory#systems
+         * @type {Phaser.Scenes.Systems}
+         * @protected
+         * @since 3.0.0
+         */
+        this.systems = scene.sys;
 
-        return this.world.group.add(object);
+        if (!scene.sys.settings.isBooted)
+        {
+            scene.sys.events.once('boot', this.boot, this);
+        }
 
-    },
+        /**
+         * A reference to the Scene Display List.
+         *
+         * @name Phaser.GameObjects.GameObjectFactory#displayList
+         * @type {Phaser.GameObjects.DisplayList}
+         * @protected
+         * @since 3.0.0
+         */
+        this.displayList;
 
-	/**
-    * Create a new Sprite with specific position and sprite sheet key.
-    *
-    * @param x {number} X position of the new sprite.
-    * @param y {number} Y position of the new sprite.
-    * @param [key] {string|RenderTexture} The image key as defined in the Game.Cache to use as the texture for this sprite OR a RenderTexture
-    * @param [frame] {string|number} If the sprite uses an image from a texture atlas or sprite sheet you can pass the frame here. Either a number for a frame ID or a string for a frame name.
-    * @returns {Sprite} The newly created sprite object.
-    */
-    sprite: function (x, y, key, frame) {
-
-        return this.world.group.add(new Phaser.Sprite(this.game, x, y, key, frame));
-
+        /**
+         * A reference to the Scene Update List.
+         *
+         * @name Phaser.GameObjects.GameObjectFactory#updateList;
+         * @type {Phaser.GameObjects.UpdateList}
+         * @protected
+         * @since 3.0.0
+         */
+        this.updateList;
     },
 
     /**
-    * Create a new Sprite with specific position and sprite sheet key that will automatically be added as a child of the given parent.
-    *
-    * @param x {number} X position of the new sprite.
-    * @param y {number} Y position of the new sprite.
-    * @param [key] {string|RenderTexture} The image key as defined in the Game.Cache to use as the texture for this sprite OR a RenderTexture
-    * @param [frame] {string|number} If the sprite uses an image from a texture atlas or sprite sheet you can pass the frame here. Either a number for a frame ID or a string for a frame name.
-    * @returns {Sprite} The newly created sprite object.
-    */
-    child: function (parent, x, y, key, frame) {
+     * Boots the plugin.
+     *
+     * @method Phaser.GameObjects.GameObjectFactory#boot
+     * @private
+     * @since 3.0.0
+     */
+    boot: function ()
+    {
+        this.displayList = this.systems.displayList;
+        this.updateList = this.systems.updateList;
 
-        var child = this.world.group.add(new Phaser.Sprite(this.game, x, y, key, frame));
-        parent.addChild(child);
+        var eventEmitter = this.systems.events;
+
+        eventEmitter.on('shutdown', this.shutdown, this);
+        eventEmitter.on('destroy', this.destroy, this);
+    },
+
+    /**
+     * Adds an existing Game Object to this Scene.
+     * 
+     * If the Game Object renders, it will be added to the Display List.
+     * If it has a `preUpdate` method, it will be added to the Update List.
+     *
+     * @method Phaser.GameObjects.GameObjectFactory#existing
+     * @since 3.0.0
+     *
+     * @param {Phaser.GameObjects.GameObject} child - The child to be added to this Scene.
+     *
+     * @return {Phaser.GameObjects.GameObject} The Game Object that was added.
+     */
+    existing: function (child)
+    {
+        if (child.renderCanvas || child.renderWebGL)
+        {
+            this.displayList.add(child);
+        }
+
+        if (child.preUpdate)
+        {
+            this.updateList.add(child);
+        }
+
         return child;
-
     },
 
     /**
-    * Create a tween object for a specific object. The object can be any JavaScript object or Phaser object such as Sprite.
-    *
-    * @param obj {object} Object the tween will be run on.
-    * @return {Phaser.Tween} The newly created tween object.
-    */
-    tween: function (obj) {
-
-        return this.game.tweens.create(obj);
-
+     * Shuts this plugin down.
+     *
+     * @method Phaser.GameObjects.GameObjectFactory#shutdown
+     * @since 3.0.0
+     */
+    shutdown: function ()
+    {
     },
 
-    group: function (parent, name) {
+    /**
+     * Destroys this plugin.
+     *
+     * @method Phaser.GameObjects.GameObjectFactory#destroy
+     * @since 3.0.0
+     */
+    destroy: function ()
+    {
+        this.scene = null;
+        this.displayList = null;
+        this.updateList = null;
+    }
 
-        return new Phaser.Group(this.game, parent, name);
+});
 
-    },
+//  Static method called directly by the Game Object factory functions
 
-    audio: function (key, volume, loop) {
-
-        return this.game.sound.add(key, volume, loop);
-        
-    },
-
-    tileSprite: function (x, y, width, height, key, frame) {
-
-        return this.world.group.add(new Phaser.TileSprite(this.game, x, y, width, height, key, frame));
-
-    },
-
-    text: function (x, y, text, style) {
-
-        return this.world.group.add(new Phaser.Text(this.game, x, y, text, style));
-
-    },
-
-    button: function (x, y, key, callback, callbackContext, overFrame, outFrame, downFrame) {
-
-        return this.world.group.add(new Phaser.Button(this.game, x, y, key, callback, callbackContext, overFrame, outFrame, downFrame));
-
-    },
-
-    graphics: function (x, y) {
-
-        return this.world.group.add(new Phaser.Graphics(this.game, x, y));
-
-    },
-
-    emitter: function (x, y, maxParticles) {
-
-        return this.game.particles.add(new Phaser.Particles.Arcade.Emitter(this.game, x, y, maxParticles));
-
-    },
-
-    bitmapText: function (x, y, text, style) {
-
-        return this.world.group.add(new Phaser.BitmapText(this.game, x, y, text, style));
-
-    },
-
-    tilemap: function (x, y, key, resizeWorld, tileWidth, tileHeight) {
-
-        return this.world.group.add(new Phaser.Tilemap(this.game, key, x, y, resizeWorld, tileWidth, tileHeight));
-
-    },
-
-    renderTexture: function (key, width, height) {
-
-        var texture = new Phaser.RenderTexture(this.game, key, width, height);
-
-        this.game.cache.addRenderTexture(key, texture);
-
-        return texture;
-
-    },
-
+GameObjectFactory.register = function (type, factoryFunction)
+{
+    if (!GameObjectFactory.prototype.hasOwnProperty(type))
+    {
+        GameObjectFactory.prototype[type] = factoryFunction;
+    }
 };
+
+PluginManager.register('GameObjectFactory', GameObjectFactory, 'add');
+
+module.exports = GameObjectFactory;
