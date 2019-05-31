@@ -1,7 +1,7 @@
 /**
  * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2018 Photon Storm Ltd.
- * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
 var Perimeter = require('./Perimeter');
@@ -16,12 +16,14 @@ var Point = require('../point/Point');
  * @function Phaser.Geom.Rectangle.MarchingAnts
  * @since 3.0.0
  *
+ * @generic {Phaser.Geom.Point[]} O - [out,$return]
+ *
  * @param {Phaser.Geom.Rectangle} rect - [description]
  * @param {number} step - [description]
  * @param {integer} quantity - [description]
- * @param {array} [out] - [description]
+ * @param {(array|Phaser.Geom.Point[])} [out] - [description]
  *
- * @return {Phaser.Geom.Point[]} [description]
+ * @return {(array|Phaser.Geom.Point[])} [description]
  */
 var MarchingAnts = function (rect, step, quantity, out)
 {

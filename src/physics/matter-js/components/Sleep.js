@@ -1,15 +1,16 @@
 /**
  * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2018 Photon Storm Ltd.
- * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
+var Events = require('../events');
 var MatterEvents = require('../lib/core/Events');
 
 /**
  * [description]
  *
- * @name Phaser.Physics.Matter.Components.Sleep
+ * @namespace Phaser.Physics.Matter.Components.Sleep
  * @since 3.0.0
  */
 var Sleep = {
@@ -20,9 +21,9 @@ var Sleep = {
      * @method Phaser.Physics.Matter.Components.Sleep#setSleepThreshold
      * @since 3.0.0
      *
-     * @param {[type]} value - [description]
+     * @param {number} [value=60] - [description]
      *
-     * @return {[type]} [description]
+     * @return {Phaser.GameObjects.GameObject} This Game Object.
      */
     setSleepThreshold: function (value)
     {
@@ -39,10 +40,10 @@ var Sleep = {
      * @method Phaser.Physics.Matter.Components.Sleep#setSleepEvents
      * @since 3.0.0
      *
-     * @param {[type]} start - [description]
-     * @param {[type]} end - [description]
+     * @param {boolean} start - [description]
+     * @param {boolean} end - [description]
      *
-     * @return {[type]} [description]
+     * @return {Phaser.GameObjects.GameObject} This Game Object.
      */
     setSleepEvents: function (start, end)
     {
@@ -58,9 +59,9 @@ var Sleep = {
      * @method Phaser.Physics.Matter.Components.Sleep#setSleepStartEvent
      * @since 3.0.0
      *
-     * @param {[type]} value - [description]
+     * @param {boolean} value - [description]
      *
-     * @return {[type]} [description]
+     * @return {Phaser.GameObjects.GameObject} This Game Object.
      */
     setSleepStartEvent: function (value)
     {
@@ -70,7 +71,7 @@ var Sleep = {
 
             MatterEvents.on(this.body, 'sleepStart', function (event)
             {
-                world.emit('sleepstart', event, this);
+                world.emit(Events.SLEEP_START, event, this);
             });
         }
         else
@@ -87,9 +88,9 @@ var Sleep = {
      * @method Phaser.Physics.Matter.Components.Sleep#setSleepEndEvent
      * @since 3.0.0
      *
-     * @param {[type]} value - [description]
+     * @param {boolean} value - [description]
      *
-     * @return {[type]} [description]
+     * @return {Phaser.GameObjects.GameObject} This Game Object.
      */
     setSleepEndEvent: function (value)
     {
@@ -99,7 +100,7 @@ var Sleep = {
 
             MatterEvents.on(this.body, 'sleepEnd', function (event)
             {
-                world.emit('sleepend', event, this);
+                world.emit(Events.SLEEP_END, event, this);
             });
         }
         else

@@ -1,51 +1,47 @@
 /**
  * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2018 Photon Storm Ltd.
- * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
 var AlignIn = require('../display/align/in/QuickSet');
 var CONST = require('../display/align/const');
-var GetValue = require('../utils/object/GetValue');
+var GetFastValue = require('../utils/object/GetFastValue');
 var NOOP = require('../utils/NOOP');
 var Zone = require('../gameobjects/zone/Zone');
 
-var tempZone = new Zone({ sys: { queueDepthSort: NOOP }}, 0, 0, 1, 1);
+var tempZone = new Zone({ sys: { queueDepthSort: NOOP, events: { once: NOOP } } }, 0, 0, 1, 1);
 
 /**
- * [description]
+ * Takes an array of Game Objects, or any objects that have public `x` and `y` properties,
+ * and then aligns them based on the grid configuration given to this action.
  *
  * @function Phaser.Actions.GridAlign
  * @since 3.0.0
- * 
- * @param {array} items - An array of Game Objects. The contents of this array are updated by this Action.
- * @param {object} options - [description]
  *
- * @return {array} The array of Game Objects that was passed to this Action.
+ * @generic {Phaser.GameObjects.GameObject[]} G - [items,$return]
+ *
+ * @param {(array|Phaser.GameObjects.GameObject[])} items - The array of items to be updated by this action.
+ * @param {Phaser.Types.Actions.GridAlignConfig} options - The GridAlign Configuration object.
+ *
+ * @return {(array|Phaser.GameObjects.GameObject[])} The array of objects that were passed to this Action.
  */
 var GridAlign = function (items, options)
 {
-    var width = GetValue(options, 'width', -1);
-    var height = GetValue(options, 'height', -1);
-    var cellWidth = GetValue(options, 'cellWidth', 1);
-    var cellHeight = GetValue(options, 'cellHeight', cellWidth);
-    var position = GetValue(options, 'position', CONST.TOP_LEFT);
-    var x = GetValue(options, 'x', 0);
-    var y = GetValue(options, 'y', 0);
+    if (options === undefined) { options = {}; }
 
-    // var centerX = GetValue(options, 'centerX', null);
-    // var centerY = GetValue(options, 'centerY', null);
+    var width = GetFastValue(options, 'width', -1);
+    var height = GetFastValue(options, 'height', -1);
+    var cellWidth = GetFastValue(options, 'cellWidth', 1);
+    var cellHeight = GetFastValue(options, 'cellHeight', cellWidth);
+    var position = GetFastValue(options, 'position', CONST.TOP_LEFT);
+    var x = GetFastValue(options, 'x', 0);
+    var y = GetFastValue(options, 'y', 0);
 
     var cx = 0;
     var cy = 0;
     var w = (width * cellWidth);
     var h = (height * cellHeight);
-
-    //  If the Grid is centered on a position then we need to calculate it now
-    // if (centerX !== null && centerY !== null)
-    // {
-    // 
-    // }
 
     tempZone.setPosition(x, y);
     tempZone.setSize(cellWidth, cellHeight);
